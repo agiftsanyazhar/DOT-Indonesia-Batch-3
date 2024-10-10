@@ -23,7 +23,7 @@ class ArticleSeeder extends Seeder
             [
                 'title' => fake()->sentence(8),
                 'description' => '<p>' . fake()->text() . '</p>',
-                'featured_image' => 'uploads/articles/article-2.jpg',
+                'featured_image' => 'uploads/articles/article-2.jpeg',
                 'user_id' => rand(1, 3),
             ],
             [
