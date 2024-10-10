@@ -4,15 +4,13 @@
     <div class="page-title">
         <div class="row">
             <div class="col-12 col-md-6 order-md-1 order-last">
-                <h3>{{ Str::limit($article->title, 15) }}</h3>
+                <h3>Detail Artikel</h3>
             </div>
             <div class="col-12 col-md-6 order-md-2 order-first">
                 <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('admin.organization-profile.bio.index') }}">Beranda</a></li>
-                        <li class="breadcrumb-item">Konten</li>
-                        <li class="breadcrumb-item"><a href="{{ route('admin.content.article.index') }}">Artikel</a></li>
-                        <li class="breadcrumb-item">{{ Str::limit($article->title, 15) }}</li>
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard.article.index') }}">Beranda</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard.article.index') }}">Artikel</a></li>
                         <li class="breadcrumb-item active">{{ $title }}</li>
                     </ol>
                 </nav>
@@ -34,13 +32,26 @@
 
     <section class="section">
         <div class="card shadow">
+            <div class="card-body">
+                <a href="{{ url('storage/' . $article->featured_image) }}" target="_blank" rel="noopener noreferrer">
+                    <img class="rounded shadow" src="{{ asset('storage/' . $article->featured_image) }}" alt="{{ $article->title }}" style="width:100%; height:350px; object-fit:contain;">
+                </a>
+                <p class="text-center mt-3 fw-bold">Klik gambar untuk memperbesar</p>
+                <h3 class="mb-4">{{ $article->title }}</h3>
+                <p>{!! $article->description !!}</p>
+            </div>
+        </div>
+
+        <div class="card shadow">
             <div class="card-header">
                 <h5 class="card-title">
-                    {{ $title }}
-                    <span>
-                        <button type="button" class="btn btn-primary text-white" data-bs-toggle="modal" data-bs-target="#modal-form"
-                            onclick="openFormDialog('modal-form', 'add', '{{ $article->id }}')"><i class="bi bi-plus-lg"></i></button>
-                    </span> 
+                    Gambar Slider
+                    @if ($article->user_id == Auth::user()->id)
+                        <span>
+                            <button type="button" class="btn btn-primary text-white" data-bs-toggle="modal" data-bs-target="#modal-form"
+                                onclick="openFormDialog('modal-form', 'add', '{{ $article->id }}')"><i class="bi bi-plus-lg"></i></button>
+                        </span> 
+                    @endif
                 </h5>
             </div>
             <div class="card-body">
@@ -67,17 +78,19 @@
                                     <td>{{ $number++ }}</td>
                                     <td class="text-center">{!! $item->image ? '<a href="'. url('storage/' . $item->image) .'" target="_blank" rel="noopener noreferrer"><img class="rounded shadow" src="'. asset('storage/' . $item->image) .'" alt="'. $item->title .'" style="width:100%; height:100px; object-fit:contain;"></a>' : '-' !!}</td>
                                     <td class="text-center">
-                                        <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-warning text-white" data-bs-toggle="modal"
-                                                data-bs-target="#modal-form"
-                                                onclick="openFormDialog('modal-form', 'edit', '{{ $item->id }}', '{{ $item->image }}', '{{ $item->article_id }}')">
-                                                <i class="bi bi-pencil-fill"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-danger"
-                                                onclick="deleteDialog('{{ route('admin.content.article.detail.destroy', ['article_id' => $item->article_id, 'id' => $item->id]) }}')">
-                                                <i class="bi bi-trash-fill"></i>
-                                            </button>
-                                        </div>
+                                        @if ($article->user_id == Auth::user()->id)
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-warning text-white" data-bs-toggle="modal"
+                                                    data-bs-target="#modal-form"
+                                                    onclick="openFormDialog('modal-form', 'edit', '{{ $item->id }}', '{{ $item->image }}', '{{ $item->article_id }}')">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-danger"
+                                                    onclick="deleteDialog('{{ route('dashboard.article.detail.destroy', ['article_id' => $item->article_id, 'id' => $item->id]) }}')">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </div>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -99,7 +112,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form class="form" id="form-modal" action="{{ route('admin.content.article.detail.store', ['article_id' => 'article_id']) }}" method="POST" enctype="multipart/form-data">
+                    <form class="form" id="form-modal" action="{{ route('dashboard.article.detail.store', ['article_id' => 'article_id']) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="row">
                             <div class="col-md-12 col-12">
@@ -168,12 +181,12 @@
     <script>
         function openFormDialog(target, type, id, image, article_id) {
             if (type === 'add') {
-                $('#' + target + ' form').attr('action', '{{ route('admin.content.article.detail.store', ['article_id' => 'article_id']) }}');
+                $('#' + target + ' form').attr('action', '{{ route('dashboard.article.detail.store', ['article_id' => 'article_id']) }}');
                 $('#' + target + ' .form-control').val('');
                 $('#' + target + ' input[name="image"]').attr('required', 'required');
                 $('#' + target + ' input[name="article_id"]').val(id);
             } else if (type === 'edit') {
-                const editUrl = '{{ url('admin/konten/artikel/detail') }}' + '/' + article_id + '/update';
+                const editUrl = '{{ url('dashboard/artikel/detail') }}' + '/' + article_id + '/update';
                 $('#' + target + ' .clear-after').val('');
                 $('#' + target + ' form').attr('action', editUrl);
                 $('#' + target + ' .clear-after[name="id"]').val(id);

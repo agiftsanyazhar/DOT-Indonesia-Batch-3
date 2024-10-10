@@ -15,15 +15,15 @@ class ArticleImageSeeder extends Seeder
     {
         $articleImages = [
             [
-                'article_id' => rand(1, 5),
+                'article_id' => 1,
                 'image' => 'uploads/articles/article-image-1.jpg',
             ],
             [
-                'article_id' => rand(1, 5),
-                'image' => 'uploads/articles/article-image-2.jpg',
+                'article_id' => 1,
+                'image' => 'uploads/articles/article-image-2.png',
             ],
             [
-                'article_id' => rand(1, 5),
+                'article_id' => 1,
                 'image' => 'uploads/articles/article-image-3.jpg',
             ],
         ];

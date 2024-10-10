@@ -1,28 +1,38 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-use App\Models\{ArticleImage};
+use App\Models\{Article, ArticleImage};
+use Exception;
+use Illuminate\Support\Facades\{Log, Storage};
 
 class ArticleImageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    private $title;
+    private $uploadPath;
+
+    public function __construct()
     {
-        //
+        $this->title = 'Detail Artikel';
+        $this->uploadPath = 'uploads/articles/';
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Display a listing of the resource.
      */
-    public function create()
+    public function index($id)
     {
-        //
+        $data['title'] = $this->title;
+
+        $article = Article::where('id', $id)->firstOrFail();
+
+        $data['article'] = $article;
+        $data['articleImage'] = ArticleImage::where('article_id', $article->id)->get();
+
+        return view('dashboard.article.detail.index', $data);
     }
 
     /**
@@ -30,38 +40,85 @@ class ArticleImageController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        try {
+            $data = $request->validate([
+                'article_id' => 'required|integer',
+                'image' => 'required|mimes:jpeg,jpg,png|max:1024',
+            ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ArticleImage $articleImage)
-    {
-        //
-    }
+            if ($request->hasFile('image')) {
+                $data['image'] = $request->file('image')->store($this->uploadPath);
+            }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ArticleImage $articleImage)
-    {
-        //
+            ArticleImage::create($data);
+
+            $status = 'success';
+            $message = 'Berhasil disimpan.';
+        } catch (Exception $e) {
+            Log::debug($e->getMessage());
+
+            $status = 'danger';
+            $message = 'Gagal disimpan. Ukuran file terlalu besar atau jenis file tidak valid.';
+        }
+
+        return redirect()->back()->with($status, $message);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request)
+    public function update(Request $request, $article_id)
     {
-        //
+        try {
+            $data = $request->validate([
+                'article_id' => 'required|integer',
+                'image' => 'required|mimes:jpeg,jpg,png|max:1024',
+            ]);
+
+            $articleImage = ArticleImage::where(['article_id' => $article_id, 'id' => $request->id])->firstOrFail();
+
+            if ($request->hasFile('image')) {
+                if ($articleImage->image) {
+                    Storage::delete($articleImage->image);
+                }
+
+                $data['image'] = $request->file('image')->store($this->uploadPath);
+            }
+
+            $articleImage->update($data);
+
+            $status = 'success';
+            $message = 'Berhasil disimpan.';
+        } catch (Exception $e) {
+            Log::debug($e->getMessage());
+
+            $status = 'danger';
+            $message = 'Gagal disimpan. Ukuran file terlalu besar atau jenis file tidak valid.';
+        }
+
+        return redirect()->back()->with($status, $message);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ArticleImage $articleImage)
+    public function destroy($article_id, $id)
     {
-        //
+        try {
+            $articleImage = ArticleImage::where(['article_id' => $article_id, 'id' => $id])->firstOrFail();
+            Storage::delete($articleImage->image);
+
+            $articleImage->delete();
+
+            $status = 'success';
+            $message = 'Berhasil dihapus';
+        } catch (\Exception $e) {
+            Log::debug($e->getMessage());
+
+            $status = 'danger';
+            $message = 'Gagal dihapus.';
+        }
+
+        return redirect()->back()->with($status, $message);
     }
 }

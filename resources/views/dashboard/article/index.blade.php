@@ -72,13 +72,13 @@
                                         {{ Str::limit($article->title, 75) }}<br>
                                     </td>
                                     <td>
-                                        <small>Dibuat: {{ date('d M Y', strtotime($article->created_at)) }}</small><br>
-                                        <small>Diedit: {{ date('d M Y', strtotime($article->updated_at)) }}</small><br>
+                                        <small>Dibuat: {{ date('d/m/Y', strtotime($article->created_at)) }}</small><br>
+                                        <small>Diedit: {{ date('d/m/Y', strtotime($article->updated_at)) }}</small><br>
                                         <small>Oleh: {{ $article->user->name }}</small>
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group" role="group">
-                                            {{-- <a class="btn btn-primary" href="{{ route('dashboard.article.detail.index', $article->id) }}"><i class="bi bi-eye-fill"></i></a> --}}
+                                            <a class="btn btn-primary" href="{{ route('dashboard.article.detail.index', $article->id) }}"><i class="bi bi-eye-fill"></i></a>
                                             @if ($article->user_id == Auth::id())
                                                 <button type="button" class="btn btn-warning text-white" data-bs-toggle="modal"
                                                     data-bs-target="#modal-form"
