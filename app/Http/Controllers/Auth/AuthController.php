@@ -19,7 +19,7 @@ class AuthController extends Controller
         return view('auth.login.index', $data);
     }
 
-    public function store(LoginRequest $request)
+    public function login(LoginRequest $request)
     {
         $request->authenticate();
 
@@ -31,7 +31,7 @@ class AuthController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request)
+    public function logout(Request $request)
     {
         Auth::guard('web')->logout();
         $request->session()->invalidate();
