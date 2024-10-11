@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\Auth\AuthController;
-use App\Http\Controllers\API\Dashboard\{ArticleController};
+use App\Http\Controllers\API\Dashboard\{ArticleController, ArticleImageController};
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,4 +20,5 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::apiResource('article', ArticleController::class);
+    Route::apiResource('article-detail', ArticleImageController::class);
 });

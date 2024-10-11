@@ -4,11 +4,10 @@ namespace App\Http\Controllers\API\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\{ArticleRequest};
-use Illuminate\Http\Request;
 
 use App\Models\{Article};
 use Exception;
-use Illuminate\Support\Facades\{Log, Storage};
+use Illuminate\Support\Facades\{Storage};
 use Illuminate\Validation\ValidationException;
 
 class ArticleController extends Controller
@@ -57,7 +56,7 @@ class ArticleController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Article Successfully Added.',
+                'message' => 'Article successfully added.',
                 'data' => $article,
             ], 200);
         } catch (ValidationException $e) {
@@ -86,7 +85,7 @@ class ArticleController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Article Detail.',
+            'message' => 'Article detail.',
             'data' => $article,
         ], 200);
     }
@@ -118,7 +117,7 @@ class ArticleController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Article Successfully Updated.',
+                'message' => 'Article successfully updated.',
                 'data' => $article,
             ], 200);
         } catch (ValidationException $e) {
@@ -152,7 +151,7 @@ class ArticleController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Article Successfully Deleted.',
+                'message' => 'Article successfully deleted.',
             ]);
         } catch (Exception $e) {
             return response()->json([

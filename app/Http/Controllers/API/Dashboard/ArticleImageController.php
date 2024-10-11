@@ -1,81 +1,102 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard;
+namespace App\Http\Controllers\API\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ArticleImageRequest;
 use Illuminate\Http\Request;
 
-use App\Models\{Article, ArticleImage};
+use App\Models\{ArticleImage};
 use Exception;
 use Illuminate\Support\Facades\{Log, Storage};
+use Illuminate\Validation\ValidationException;
 
 class ArticleImageController extends Controller
 {
-    private $title;
     private $uploadPath;
 
     public function __construct()
     {
-        $this->title = 'Detail Artikel';
         $this->uploadPath = 'uploads/articles/';
     }
 
     /**
      * Display a listing of the resource.
      */
-    public function index($id)
+    public function index()
     {
-        $data['title'] = $this->title;
+        $articleImage = ArticleImage::with(['article'])->get();
 
-        $article = Article::where('id', $id)->firstOrFail();
-
-        $data['article'] = $article;
-        $data['articleImage'] = ArticleImage::where('article_id', $article->id)->get();
-
-        return view('dashboard.article.detail.index', $data);
+        return response()->json([
+            'success' => true,
+            'message' => 'Get data images success',
+            'data' => $articleImage
+        ], 200);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ArticleImageRequest $request)
     {
         try {
-            $data = $request->validate([
-                'article_id' => 'required|integer',
-                'image' => 'required|mimes:jpeg,jpg,png|max:1024',
+            $data = $request->only([
+                'article_id',
+                'image',
             ]);
 
             if ($request->hasFile('image')) {
                 $data['image'] = $request->file('image')->store($this->uploadPath);
             }
 
-            ArticleImage::create($data);
+            $articleImage = ArticleImage::create($data);
 
-            $status = 'success';
-            $message = 'Berhasil disimpan.';
+            return response()->json([
+                'success' => true,
+                'message' => 'Image successfully added.',
+                'data' => $articleImage,
+            ], 200);
+        } catch (ValidationException $e) {
+            $errors = $e->validator->errors()->messages();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error',
+                'errors' => $errors,
+            ], 422);
         } catch (Exception $e) {
-            Log::debug($e->getMessage());
-
-            $status = 'danger';
-            $message = 'Gagal disimpan. Ukuran file terlalu besar atau jenis file tidak valid.';
+            return response()->json([
+                'success' => false,
+                'message' => 'Error',
+                'errors' => ['error' => $e->getMessage()],
+            ], 500);
         }
+    }
 
-        return redirect()->back()->with($status, $message);
+    /**
+     * Display the specified resource.
+     */
+    public function show($id)
+    {
+        $articleImage = ArticleImage::where('article_id', $id)->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Get data article detail success',
+            'data' => $articleImage
+        ], 200);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $article_id)
+    public function update(ArticleImageRequest $request, ArticleImage $articleImage)
     {
         try {
-            $data = $request->validate([
-                'article_id' => 'required|integer',
-                'image' => 'required|mimes:jpeg,jpg,png|max:1024',
+            $data = $request->only([
+                'article_id',
+                'image',
             ]);
-
-            $articleImage = ArticleImage::where(['article_id' => $article_id, 'id' => $request->id])->firstOrFail();
 
             if ($request->hasFile('image')) {
                 if ($articleImage->image) {
@@ -87,38 +108,52 @@ class ArticleImageController extends Controller
 
             $articleImage->update($data);
 
-            $status = 'success';
-            $message = 'Berhasil disimpan.';
+            return response()->json([
+                'success' => true,
+                'message' => 'Image successfully updated.',
+                'data' => $articleImage,
+            ], 200);
+        } catch (ValidationException $e) {
+            $errors = $e->validator->errors()->messages();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error',
+                'errors' => $errors,
+            ], 422);
         } catch (Exception $e) {
-            Log::debug($e->getMessage());
-
-            $status = 'danger';
-            $message = 'Gagal disimpan. Ukuran file terlalu besar atau jenis file tidak valid.';
+            return response()->json([
+                'success' => false,
+                'message' => 'Error',
+                'errors' => ['error' => $e->getMessage()],
+            ], 500);
         }
-
-        return redirect()->back()->with($status, $message);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($article_id, $id)
+    public function destroy($id)
     {
         try {
-            $articleImage = ArticleImage::where(['article_id' => $article_id, 'id' => $id])->firstOrFail();
-            Storage::delete($articleImage->image);
+            $articleImage = ArticleImage::findOrFail($id);
+
+            if ($articleImage->image) {
+                Storage::delete($articleImage->image);
+            }
 
             $articleImage->delete();
 
-            $status = 'success';
-            $message = 'Berhasil dihapus';
-        } catch (\Exception $e) {
-            Log::debug($e->getMessage());
-
-            $status = 'danger';
-            $message = 'Gagal dihapus.';
+            return response()->json([
+                'success' => true,
+                'message' => 'Image successfully deleted.',
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        return redirect()->back()->with($status, $message);
     }
 }
